@@ -1,4 +1,4 @@
 def deploy():
-	print "pula"
+	print "Deployment done"
 
 deploy.is_task = True
