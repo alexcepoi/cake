@@ -1,14 +1,12 @@
 #! /usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 
-#!/usr/bin/python2.6
-# -*- coding: utf-8 -*-
-
+import os
+import os.path as osp
+import sys
 import glob
 import imp
-import os.path as osp
 import py_compile
-import sys
 
 
 def load_module(filename, condition=None, required=[]):
