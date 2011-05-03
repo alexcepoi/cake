@@ -88,12 +88,6 @@ def load_tasks(directories, tempdir):
 	return tasks
 
 
-# Decorators
-def task(func):
-	func.is_task = true
-	return func
-
-
 # Check project cakefile
 current = os.getcwd()
 while True:
