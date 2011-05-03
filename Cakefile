@@ -1,4 +1,4 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
+# Cakefile
 
-MODULES = ['test']
+MODULES: [test, pula]
+TEMPDIR: tmp/bytecode

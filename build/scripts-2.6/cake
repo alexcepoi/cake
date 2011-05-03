@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.6
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import glob
@@ -8,10 +8,8 @@ import os.path as osp
 import py_compile
 import sys
 
-import yaml
 
-
-def load_module(filename, tempdir='', condition=None, required=[]):
+def load_module(filename, condition=None, required=[]):
 	"""
 	Returns a mapping between all the names defined in the module
 	pointed by `filename` and their corresponding values
@@ -20,14 +18,11 @@ def load_module(filename, tempdir='', condition=None, required=[]):
 	if condition is None:
 		condition = lambda x: True
 	
-	# Convention over the bytecode's location
-	if tempdir:
-		compfile = osp.join(tempdir, 'ctask_%s' % osp.basename(filename))
-	else:
-		compfile = filename + 'c'
-	
 	# Convention over the module name
 	modname = '_task_%s' % osp.splitext(osp.basename(filename))[0]
+	
+	# Compile the source in a temporary location
+	compfile = filename + 'c'
 	
 	try:
 		py_compile.compile(file=filename, cfile=compfile, doraise=True)
@@ -68,7 +63,7 @@ def load_module(filename, tempdir='', condition=None, required=[]):
 	return namespace
 
 
-def load_tasks(directories, tempdir):
+def load_tasks(directories):
 	"""
 	Returns a mapping of all the tasks loaded from all the .py files
 	from all the directories (in the `directories` list)
@@ -80,7 +75,7 @@ def load_tasks(directories, tempdir):
 			names = {}
 			try:
 				condition = lambda obj: getattr(obj, 'is_task', False)
-				names = load_module(filename, tempdir, condition)
+				names = load_module(filename, condition)
 			except Exception, e:
 				print "Can't load %s" % filename
 			
@@ -100,17 +95,9 @@ while True:
 	cakefile = os.path.join(current, 'Cakefile')
 
 	if os.path.exists(cakefile):
-		# Load the variables from the cakefile (YAML format)
-		with open(cakefile) as f:
-			parse = yaml.load(f)
-		
-		tempdir = parse.get('TMPDIR', '/tmp')
-		directories = map(lambda name: os.path.join(current, name), parse['MODULES'])
-		
-		# Parse and load the tasks
-		tasks = load_tasks(directories, tempdir)
-		print "(in %s)" % current
-		break
+		parse = load_module(cakefile)
+		tasks = load_tasks(map(lambda name: os.path.join(current, name), parse['MODULES']))
+		print "(in %s)" % current; break
 
 	if current != '/':
 		current = os.path.dirname(current)
