@@ -1,4 +1,4 @@
 # Cakefile
 
-MODULES: [test, pula]
+MODULES: [demo]
 TEMPDIR: tmp/bytecode
