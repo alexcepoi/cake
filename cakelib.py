@@ -1,6 +1,7 @@
 #!/usr/bin/python2.6
 # -*- coding: utf-8 -*-
 
+import sys
 import glob
 import imp
 import os.path as osp
@@ -65,6 +66,7 @@ def load_tasks(directories):
 	tasks = {}
 	for directory in directories:
 		for filename in glob.iglob('%s/*.py' % directory):
+			names = {}
 			try:
 				condition = lambda obj: getattr(obj, 'is_task', False)
 				names = load_module(filename, condition)
