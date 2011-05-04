@@ -14,8 +14,9 @@ setup(
 	description = 'Simple python build program',
 	long_description = open('README.rst').read(),
 
-	scripts = ['cake'],
+	package_dir = {'': 'lib'},
 	py_modules = ['cake'],
+	scripts = ['lib/cake'],
 
 	platforms='any',
 	requires = ['PyYAML'],

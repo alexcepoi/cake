@@ -6,6 +6,6 @@
 **~
 
 # build directory (setup.py)
-cake.egg-info/
 build/
 dist/
+**cake.egg-info/
