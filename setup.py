@@ -12,7 +12,7 @@ setup(
 	download_url = 'https://github.com/alexcepoi/cake/zipball/master',
 
 	description = 'Simple python build program',
-	long_description = open('README').read(),
+	long_description = open('README.rst').read(),
 
 	scripts = ['cake'],
 	py_modules = ['cake'],
