@@ -3,10 +3,10 @@
 
 import types
 
-def task(arg = ""):
+def task(arg = None):
 	def decorator(func):
-		func.is_task = True
-		func.desc = arg if type(arg) is str else ''
+		func._task = True
+		func._desc = arg if type(arg) is str else ''
 		return func
 
 	if type(arg) == types.FunctionType:

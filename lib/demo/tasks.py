@@ -10,6 +10,7 @@ def one():
 
 @task()
 def two():
+	""" task docstring """
 	common()
 	print "two finished"
 

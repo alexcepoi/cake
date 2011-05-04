@@ -1,12 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import imp
+import inspect
+import glob
 import os
 import os.path as osp
-import sys
 import re
-import imp
-import glob
+import sys
 
 import yaml
 
@@ -22,7 +23,7 @@ def load_module(filename, condition=None, required=[]):
 		condition = lambda x: True
 	
 	# Convention over the module name
-	modname = '_task_%s' % osp.splitext(filename)[0]
+	modname = '_ctask_%s' % osp.splitext(filename)[0]
 	
 	# Load the module
 	try: modobj = imp.load_source(modname, filename)
@@ -56,10 +57,15 @@ def load_tasks(directories):
 	"""
 	
 	tasks = {}
-	condition = lambda obj: getattr(obj, 'is_task', False)
-
+	def condition(obj):
+		if getattr(obj, '_task', False):
+			obj._help = inspect.getdoc(obj) or ''
+			obj._spec = inspect.formatargspec(*inspect.getargspec(obj))
+			return True
+		return False
+	
 	for directory in directories:
-		for filename in glob.iglob('%s/*.py' % directory):
+		for filename in glob.iglob(osp.join(directory, '*.py')):
 			try: names = load_module(filename, condition)
 			except Exception, e:
 				e.filename = filename
@@ -67,6 +73,7 @@ def load_tasks(directories):
 			else:
 				tasks.update(names)
 	return tasks
+
 
 def recurse_up(directory, filename):
 	"""
@@ -85,6 +92,7 @@ def recurse_up(directory, filename):
 		else: directory = osp.dirname(directory)
 	return False
 
+
 def puts(*args):
 	Fore = {
 			'BLACK': '\x1b[30m',
@@ -95,7 +103,7 @@ def puts(*args):
 			'RED': '\x1b[31m',
 			'RESET': '\x1b[39m',
 			'WHITE': '\x1b[37m',
-			'YELLOW': '\x1b[33m'
+			'YELLOW': '\x1b[33m',
 			}
 
 	def replace(mobj):
@@ -121,9 +129,8 @@ if __name__ == '__main__':
 	# Load all tasks
 	cakefile = osp.join(root, 'Cakefile')
 	with open(cakefile) as f:
-		conf = yaml.load(f)
-	if not conf: conf = {}
-
+		conf = yaml.load(f) or {}
+	
 	dirs = conf.get('TASKDIRS')
 	if not dirs:
 		puts('{red}cake aborted!', 'Cakefile does not define `TASKDIRS`')
@@ -138,8 +145,9 @@ if __name__ == '__main__':
 	# Check arguments
 	if len(sys.argv) <= 1:
 		# List all tasks
-		for task in tasks.items():
-			puts("cake {cyan}%-*s{reset} # %s" % (30, task[0], task[1].desc))
+		for name, task in tasks.items():
+			spec = '{cyan}%s {reset}%s' % (name, task._spec if task._spec != '()' else '')
+			puts("cake {cyan}%-*s{reset} # %s" % (40, spec, task._desc))
 	else:
 		# Execute task
 		taskname   = sys.argv[1]
