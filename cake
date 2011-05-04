@@ -150,5 +150,5 @@ if __name__ == '__main__':
 		if task:
 			try: task(*args, **kwargs)
 			except TypeError, e:
-				puts('{red}rake aborted!', e)
+				puts('{red}cake aborted!', e)
 		else: puts('{red}cake aborted!', "Task {cyan}%s{reset} not found" % taskname)
