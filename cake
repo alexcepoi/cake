@@ -113,11 +113,14 @@ if __name__ == '__main__':
 		print "cake aborted!\n%s: %s" % (e.filename.replace(root + '/', ""), e)
 		exit(-1)
 
-	# Execute task
+	# Check arguments
 	if len(sys.argv) <= 1:
-		print 'cake aborted!\nNo task specified'
-		exit(-1)
+		# List all tasks
+		width = max([len(i) for i in tasks.keys()] + [30])
+		for task in tasks.items():
+			print "cake {0:<{2}} # {1}".format(task[0], task[1].desc, width)
 	else:
+		# Execute task
 		taskname   = sys.argv[1]
 		args       = [i for i in sys.argv[2:] if i.find('=') == -1]
 		kwargs     = dict([i.split('=') for i in sys.argv[2:] if i.find('=') != -1])
