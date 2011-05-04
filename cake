@@ -4,6 +4,7 @@
 import os
 import os.path as osp
 import sys
+import re
 import imp
 import glob
 
@@ -84,6 +85,27 @@ def recurse_up(directory, filename):
 		else: directory = osp.dirname(directory)
 	return False
 
+def puts(*args):
+	Fore = {
+			'BLACK': '\x1b[30m',
+			'BLUE': '\x1b[34m',
+			'CYAN': '\x1b[36m',
+			'GREEN': '\x1b[32m',
+			'MAGENTA': '\x1b[35m',
+			'RED': '\x1b[31m',
+			'RESET': '\x1b[39m',
+			'WHITE': '\x1b[37m',
+			'YELLOW': '\x1b[33m'
+			}
+
+	def replace(mobj):
+		color = Fore.get(mobj.group(1).upper())
+		if color: return color
+		else: return mobj.group(0)
+
+	for string in args:
+		print re.sub('{(.+?)}', replace, str(string)) + Fore['RESET']
+
 
 # Main program
 if __name__ == '__main__':
@@ -91,10 +113,10 @@ if __name__ == '__main__':
 	# Find project root
 	root = recurse_up(os.getcwd(), 'Cakefile')
 	if not root:
-		print 'cake aborted!\nNo Cakefile found'
-		exit (-1)
+		puts('{red}cake aborted!', 'No Cakefile found')
+		exit(-1)
 	else:
-		print "(in %s)" % root
+		puts("{yellow}(in %s)" % root)
 
 	# Load all tasks
 	cakefile = osp.join(root, 'Cakefile')
@@ -104,21 +126,20 @@ if __name__ == '__main__':
 
 	dirs = conf.get('TASKDIRS')
 	if not dirs:
-		print 'cake aborted!\nCakefile does not define `TASKDIRS`'
+		puts('{red}cake aborted!', 'Cakefile does not define `TASKDIRS`')
 		exit(-1)
 
 	dirs = [osp.join(root, i) for i in dirs]
 	try: tasks = load_tasks(dirs)
 	except Exception, e:
-		print "cake aborted!\n%s: %s" % (e.filename.replace(root + '/', ""), e)
+		puts('{red}cake aborted!', "%s: %s" % (e.filename.replace(root + '/', ""), e))
 		exit(-1)
 
 	# Check arguments
 	if len(sys.argv) <= 1:
 		# List all tasks
-		width = max([len(i) for i in tasks.keys()] + [30])
 		for task in tasks.items():
-			print "cake {0:<{2}} # {1}".format(task[0], task[1].desc, width)
+			puts("cake {cyan}%-*s{reset} # %s" % (30, task[0], task[1].desc))
 	else:
 		# Execute task
 		taskname   = sys.argv[1]
@@ -126,5 +147,8 @@ if __name__ == '__main__':
 		kwargs     = dict([i.split('=') for i in sys.argv[2:] if i.find('=') != -1])
 
 		task = tasks.get(taskname)
-		if task: task(*args, **kwargs)
-		else: print "cake aborted!\nTask '%s' not found" % taskname
+		if task:
+			try: task(*args, **kwargs)
+			except TypeError, e:
+				puts('{red}rake aborted!', e)
+		else: puts('{red}cake aborted!', "Task {cyan}%s{reset} not found" % taskname)

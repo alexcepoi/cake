@@ -14,6 +14,6 @@ def two():
 	print "two finished"
 
 @task("complex task")
-def three():
+def three(value):
 	common()
-	print "three finished"
+	print "three finished with value %s" % value
