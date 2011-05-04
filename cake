@@ -1,17 +1,17 @@
 #! /usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 
-import glob
-import imp
 import os
 import os.path as osp
-import py_compile
 import sys
+import imp
+import glob
 
 import yaml
 
 
-def load_module(filename, tempdir='', condition=None, required=[]):
+# Helpers
+def load_module(filename, condition=None, required=[]):
 	"""
 	Returns a mapping between all the names defined in the module
 	pointed by `filename` and their corresponding values
@@ -20,31 +20,11 @@ def load_module(filename, tempdir='', condition=None, required=[]):
 	if condition is None:
 		condition = lambda x: True
 	
-	# Convention over the bytecode's location
-	if tempdir:
-		compfile = osp.join(tempdir, 'ctask_%s' % osp.basename(filename))
-	else:
-		compfile = filename + 'c'
-	
 	# Convention over the module name
-	modname = '_task_%s' % osp.splitext(osp.basename(filename))[0]
+	modname = '_task_%s' % osp.splitext(filename)[0]
 	
-	try:
-		py_compile.compile(file=filename, cfile=compfile, doraise=True)
-	except py_compile.PyCompileError, e:
-		# Translate potential SyntaxError data
-		if e.args[0].startswith('SyntaxError'):
-			raise SyntaxError(*e.args[2])
-		else:
-			raise e
-	
-	# Cleanup old module object
-	if modname in sys.modules:
-		del sys.modules[modname]
-	
-	# Load the compiled module
-	try:
-		modobj = imp.load_compiled(modname, compfile)
+	# Load the module
+	try: modobj = imp.load_source(modname, filename)
 	except Exception, e:
 		# TODO encapsulate the line with problems in a custom exception
 		# and prepare subsequent code to handle it
@@ -68,59 +48,80 @@ def load_module(filename, tempdir='', condition=None, required=[]):
 	return namespace
 
 
-def load_tasks(directories, tempdir):
+def load_tasks(directories):
 	"""
 	Returns a mapping of all the tasks loaded from all the .py files
 	from all the directories (in the `directories` list)
 	"""
 	
 	tasks = {}
+	condition = lambda obj: getattr(obj, 'is_task', False)
+
 	for directory in directories:
 		for filename in glob.iglob('%s/*.py' % directory):
-			names = {}
-			try:
-				condition = lambda obj: getattr(obj, 'is_task', False)
-				names = load_module(filename, tempdir, condition)
+			try: names = load_module(filename, condition)
 			except Exception, e:
-				print "Can't load %s" % filename
-			
-			tasks.update(names)
+				e.filename = filename
+				raise e
+			else:
+				tasks.update(names)
 	return tasks
 
+def recurse_up(directory, filename):
+	"""
+	Recursive walk a directory up to root until it contains `filename`
+	"""
 
-# Check project cakefile
-current = os.getcwd()
-while True:
-	cakefile = os.path.join(current, 'Cakefile')
+	directory = osp.abspath(directory)
 
-	if os.path.exists(cakefile):
-		# Load the variables from the cakefile (YAML format)
-		with open(cakefile) as f:
-			parse = yaml.load(f)
-		
-		tempdir = parse.get('TMPDIR', '/tmp')
-		directories = map(lambda name: os.path.join(current, name), parse['MODULES'])
-		
-		# Parse and load the tasks
-		tasks = load_tasks(directories, tempdir)
-		print "(in %s)" % current
-		break
+	while True:
+		searchfile = osp.join(directory, filename)
 
-	if current != '/':
-		current = os.path.dirname(current)
-	else:
+		if osp.isfile(searchfile):
+			return directory
+
+		if directory == '/': break
+		else: directory = osp.dirname(directory)
+	return False
+
+
+# Main program
+if __name__ == '__main__':
+
+	# Find project root
+	root = recurse_up(os.getcwd(), 'Cakefile')
+	if not root:
 		print 'cake aborted!\nNo Cakefile found'
 		exit (-1)
+	else:
+		print "(in %s)" % root
 
-# Execute task
-if len(sys.argv) <= 1:
-	print 'cake aborted!\nNo task specified'
-	exit(-1)
+	# Load all tasks
+	cakefile = osp.join(root, 'Cakefile')
+	with open(cakefile) as f:
+		conf = yaml.load(f)
+	if not conf: conf = {}
 
+	dirs = conf.get('TASKDIRS')
+	if not dirs:
+		print 'cake aborted!\nCakefile does not define `TASKDIRS`'
+		exit(-1)
 
-# Parse arguments
-task   = sys.argv[1]
-args   = [i for i in sys.argv[2:] if i.find('=') == -1]
-kwargs = dict([i.split('=') for i in sys.argv[2:] if i.find('=') != -1])
+	dirs = [osp.join(root, i) for i in dirs]
+	try: tasks = load_tasks(dirs)
+	except Exception, e:
+		print "cake aborted!\n%s: %s" % (e.filename.replace(root + '/', ""), e)
+		exit(-1)
 
-tasks[task](*args, **kwargs)
+	# Execute task
+	if len(sys.argv) <= 1:
+		print 'cake aborted!\nNo task specified'
+		exit(-1)
+	else:
+		taskname   = sys.argv[1]
+		args       = [i for i in sys.argv[2:] if i.find('=') == -1]
+		kwargs     = dict([i.split('=') for i in sys.argv[2:] if i.find('=') != -1])
+
+		task = tasks.get(taskname)
+		if task: task(*args, **kwargs)
+		else: print "cake aborted!\nTask '%s' not found" % taskname

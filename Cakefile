@@ -1,4 +1,3 @@
-# Cakefile
+# Sample Cakefile
 
-MODULES: [demo]
-TEMPDIR: tmp/bytecode
+TASKDIRS: [demo]

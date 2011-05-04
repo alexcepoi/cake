@@ -4,3 +4,6 @@
 # swap files
 **swp
 **~
+
+# build directory (setup.py)
+**build/
