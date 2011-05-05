@@ -57,12 +57,7 @@ def load_tasks(directories):
 	"""
 	
 	tasks = {}
-	def condition(obj):
-		if getattr(obj, '_task', False):
-			obj._help = inspect.getdoc(obj) or ''
-			obj._spec = inspect.formatargspec(*inspect.getargspec(obj))
-			return True
-		return False
+	condition = lambda obj: getattr(obj, '_task', False)
 	
 	for directory in directories:
 		for filename in glob.iglob(osp.join(directory, '*.py')):
@@ -130,10 +125,18 @@ if __name__ == '__main__':
 	cakefile = osp.join(root, 'Cakefile')
 	with open(cakefile) as f:
 		conf = yaml.load(f) or {}
+
+	if type(conf) != dict:
+		puts('{red}cake aborted!', 'Cakefile is not valid YAML')
+		exit(-1)
 	
 	dirs = conf.get('TASKDIRS')
 	if not dirs:
 		puts('{red}cake aborted!', 'Cakefile does not define `TASKDIRS`')
+		exit(-1)
+
+	if filter(lambda x: type(x) != str, dirs):
+		puts('{red}cake aborted!', 'Cakefile `TASKDIRS` should be a list of strings')
 		exit(-1)
 
 	dirs = [osp.join(root, i) for i in dirs]
@@ -146,7 +149,8 @@ if __name__ == '__main__':
 	if len(sys.argv) <= 1:
 		# List all tasks
 		for name, task in tasks.items():
-			spec = '{cyan}%s {reset}%s' % (name, task._spec if task._spec != '()' else '')
+			params = inspect.formatargspec(*inspect.getargspec(task))
+			spec = '{cyan}%s {reset}%s' % (name, params if params != '()' else '')
 			puts("cake {cyan}%-*s{reset} # %s" % (40, spec, task._desc))
 	else:
 		# Execute task

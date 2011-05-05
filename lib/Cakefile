@@ -1,3 +1,4 @@
 # Sample Cakefile
 
-TASKDIRS: [demo]
+TASKDIRS:
+  - demo
