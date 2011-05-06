@@ -28,7 +28,7 @@ def load_module(filename, condition=None, required=[]):
 	
 	# Load the module
 	try: modobj = imp.load_source(modname, filename)
-	except Exception, e:
+	except Exception as e:
 		# TODO encapsulate the line with problems in a custom exception
 		# and prepare subsequent code to handle it
 		raise e
@@ -63,7 +63,7 @@ def load_tasks(directories):
 	for directory in directories:
 		for filename in glob.iglob(osp.join(directory, '*.py')):
 			try: names = load_module(filename, condition)
-			except Exception, e:
+			except Exception as e:
 				e.filename = filename
 				raise e
 			else:
@@ -146,7 +146,7 @@ def puts(*args, **kwargs):
 	if not sys.stdout.isatty():
 		# remove ansi codes and print
 		for string in args:
-			print re.sub('{(.+?)}', replace(False), string)
+			print(re.sub('{(.+?)}', replace(False), string))
 	else:
 		# get terminal width
 		try: curses.setupterm()
@@ -160,7 +160,7 @@ def puts(*args, **kwargs):
 			trimmed = trim(string, width)
 			if len(trimmed) < len(string):
 				trimmed = trim(string, width - 3) + '...'
-			print trimmed + Fore['RESET']
+			print(trimmed + Fore['RESET'])
 
 # Main program
 if __name__ == '__main__':
@@ -187,13 +187,13 @@ if __name__ == '__main__':
 		puts('{red}cake aborted!', 'Cakefile does not define `TASKDIRS`')
 		exit(-1)
 
-	if filter(lambda x: type(x) != str, dirs):
+	if [i for i in dirs if type(i) != str]:
 		puts('{red}cake aborted!', 'Cakefile `TASKDIRS` should be a list of strings')
 		exit(-1)
 
 	dirs = [osp.join(root, i) for i in dirs]
 	try: tasks = load_tasks(dirs)
-	except Exception, e:
+	except Exception as e:
 		puts('{red}cake aborted!', "%s: %s" % (e.filename.replace(root + '/', ""), e))
 		exit(-1)
 
@@ -220,7 +220,7 @@ if __name__ == '__main__':
 		task = tasks.get(taskname)
 		if task:
 			try: task(*args, **kwargs)
-			except TypeError, e:
+			except TypeError as e:
 				puts('{red}cake aborted!', e)
 		else:
 			puts('{red}cake aborted!', "Task {cyan}%s{reset} not found" % taskname)
