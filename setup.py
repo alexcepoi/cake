@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
 	name = 'cake',
-	version = '0.1',
+	version = '0.1.1',
 	license = 'GPLv3',
 
 	url = 'https://github.com/alexcepoi/cake',
@@ -18,7 +18,7 @@ setup(
 	py_modules = ['cake'],
 	scripts = ['lib/cake'],
 
-	platforms='any',
+	platforms='linux',
 	requires = ['PyYAML'],
 	install_requires = ['PyYAML'],
 

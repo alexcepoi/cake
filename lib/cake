@@ -4,6 +4,7 @@
 import imp
 import inspect
 import glob
+import curses
 import os
 import os.path as osp
 import re
@@ -87,28 +88,79 @@ def recurse_up(directory, filename):
 		else: directory = osp.dirname(directory)
 	return False
 
+def puts(*args, **kwargs):
+	"""
+	Prints each argument on a separte line color (highlighted and trimmed for tty)
+	"""
 
-def puts(*args):
+	# TODO: generalize
+	# trim   = kwargs.get('trim') is not False
+	# color  = kwargs.get('color') is not False
+	# stream = kwargs.get('stream') or sys.stdout
+
+	# stringify args
+	args = [str(i) for i in args]
+
+	# helpers
 	Fore = {
 			'BLACK': '\x1b[30m',
-			'BLUE': '\x1b[34m',
-			'CYAN': '\x1b[36m',
-			'GREEN': '\x1b[32m',
-			'MAGENTA': '\x1b[35m',
 			'RED': '\x1b[31m',
-			'RESET': '\x1b[39m',
-			'WHITE': '\x1b[37m',
+			'GREEN': '\x1b[32m',
 			'YELLOW': '\x1b[33m',
+			'BLUE': '\x1b[34m',
+			'MAGENTA': '\x1b[35m',
+			'CYAN': '\x1b[36m',
+			'WHITE': '\x1b[37m',
+			'RESET': '\x1b[39m',
 			}
 
-	def replace(mobj):
-		color = Fore.get(mobj.group(1).upper())
-		if color: return color
-		else: return mobj.group(0)
+	def replace(ansi = True):
+		def func(mobj):
+			color = Fore.get(mobj.group(1).upper())
+			if color:
+				if ansi: return color
+				else: return ''
+			else: return mobj.group(0)
+		return func
 
-	for string in args:
-		print re.sub('{(.+?)}', replace, str(string)) + Fore['RESET']
+	def trim(ansi, width):
+		string = ''; size = 0; i = 0
 
+		while i < len(ansi):
+			mobj = re.match('\x1b[^m]*m', ansi[i:])
+			if mobj:
+				# append ansi code
+				string = string + mobj.group(0)
+				i += len(mobj.group(0))
+			else:
+				# loop for more ansi codes even at max width
+				size += 1
+				if size > width: break
+
+				# append normal char
+				string = string + ansi[i]
+				i += 1
+		return string
+
+	# process strings
+	if not sys.stdout.isatty():
+		# remove ansi codes and print
+		for string in args:
+			print re.sub('{(.+?)}', replace(False), string)
+	else:
+		# get terminal width
+		try: curses.setupterm()
+		except: width = float('inf')
+		else: width = curses.tigetnum('cols')
+
+		# trim string
+		for string in args:
+			string =  re.sub('{(.+?)}', replace(True), string)
+
+			trimmed = trim(string, width)
+			if len(trimmed) < len(string):
+				trimmed = trim(string, width - 3) + '...'
+			print trimmed + Fore['RESET']
 
 # Main program
 if __name__ == '__main__':
@@ -147,11 +199,18 @@ if __name__ == '__main__':
 
 	# Check arguments
 	if len(sys.argv) <= 1:
-		# List all tasks
+		# Calculate specs and max spec width
+		specformat = '{cyan}%s {reset}%s'
+		width = 40 + len('{cyan}{reset}')
+
 		for name, task in tasks.items():
 			params = inspect.formatargspec(*inspect.getargspec(task))
-			spec = '{cyan}%s {reset}%s' % (name, params if params != '()' else '')
-			puts("cake {cyan}%-*s{reset} # %s" % (40, spec, task._desc))
+			task._spec = specformat % (name, params if params != '()' else '')
+			width = max(width, len(task._spec))
+
+		# List all tasks
+		for task in tasks.values():
+			puts("cake %-*s # %s" % (width, task._spec, re.sub('\s+', ' ', task._desc)))
 	else:
 		# Execute task
 		taskname   = sys.argv[1]
@@ -163,4 +222,6 @@ if __name__ == '__main__':
 			try: task(*args, **kwargs)
 			except TypeError, e:
 				puts('{red}cake aborted!', e)
-		else: puts('{red}cake aborted!', "Task {cyan}%s{reset} not found" % taskname)
+		else:
+			puts('{red}cake aborted!', "Task {cyan}%s{reset} not found" % taskname)
+

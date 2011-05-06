@@ -1,5 +1,7 @@
-Cake is a simple Python-based build program similar to Rake. It uses a
-simple yaml file (Cakefile) to load tasks from anywhere in the project.
+Cake is a simple Python-based build program similar to Rake.
+
+It uses a simple yaml file (Cakefile) to load tasks from your project.
+Cake can be called from anywhere in the project. Support for task descriptions and parameters.
 
 
 Requires
@@ -17,13 +19,16 @@ Example
 ::
 
   $ cat Cakefile 
-  TASKDIRS: [demo]
+  TASKDIRS:
+    - demo
+
+::
 
   $ cat demo/*.py
   from cake import task
 
   def common():
-  	print 'common code finished'
+  	print "common code finished"
 
   @task
   def one():
@@ -40,11 +45,15 @@ Example
   	common()
   	print "three finished with value %s" % value
 
+::
+
   $ cake
   (in /home/alex/work/python/cake)
   cake one                            # 
-  cake three                          # complex task
+  cake three (value)                  # complex task
   cake two                            # 
+
+::
 
   $ cake three 2
   (in /home/alex/work/python/cake)
