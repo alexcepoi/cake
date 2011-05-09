@@ -1,12 +1,11 @@
-Cake is a simple Python-based build program similar to Rake.
+It uses a simple python script (Cakefile) located in the project root to define its task.
+The tasks can also be loaded from random locations. Cake can be run from anywhere within the project
 
-It uses a simple yaml file (Cakefile) to load tasks from your project.
-Cake can be called from anywhere in the project. Support for task descriptions and parameters.
-
-
-Requires
+Features
 ---------------------------------------------------
- * PyYAML
+ * Task descriptions
+ * Task arguments
+ * Colored output
 
 Usage
 ---------------------------------------------------
@@ -19,46 +18,44 @@ Example
 ::
 
   $ cat Cakefile 
-  TASKDIRS:
-    - demo
+  load('tasks/*.py')
+
+  @task
+  def test():
+      """ this task does nothing """
+      print("this is a test")
 
 ::
 
-  $ cat demo/*.py
-  from cake import task
-
+  $ cat tasks/*.py
   def common():
-  	print "common code finished"
+  	print("common code executed")
 
   @task
-  def one():
-  	common()
-  	print "one finished"
+  def task1():
+        common()
+  	print("task1 code executed")
 
-  @task()
-  def two():
+  @task("this will override current docstring")
+  def task2(value):
+  	""" this is a simple task """
   	common()
-  	print "two finished"
-
-  @task("complex task")
-  def three(value):
-  	common()
-  	print "three finished with value %s" % value
+  	print("task2 code executed with value %s" % value)
 
 ::
 
   $ cake
-  (in /home/alex/work/python/cake)
-  cake one                            # 
-  cake three (value)                  # complex task
-  cake two                            # 
-
+  (in /home/alex/work/cake2/examples)
+  cake test                                  # this task does nothing
+  cake task1                                 # 
+  cake task2 (value)                         # this will override current docstring
+        
 ::
 
-  $ cake three 2
-  (in /home/alex/work/python/cake)
-  common code finished
-  three finished with value 2
+  $ cake task2 hello
+  (in /home/alex/work/cake2/examples)
+  common code executed
+  task2 code executed with value hello
 
 Install
 ---------------------------------------------------
