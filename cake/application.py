@@ -46,7 +46,6 @@ class Application(object):
 	def load(self, pattern):
 		for fname in glob.iglob(pattern):
 			src = 'from cake.helpers import *\n' + open(fname).read()
-			sys.path.append(osp.dirname(fname))
 			exec(src, self.env)
 	
 	def execute(self, name, *args, **kwargs):
@@ -60,7 +59,10 @@ class Application(object):
 	
 	def list_tasks(self):
 		width = max([len(i._spec) for i in self.tasks.values()] + [50])
-		for task in self.tasks.values():
+		keys = self.tasks.keys()
+		keys.sort()
+
+		for task in [self.tasks[i] for i in keys]:
 			puts('cake %-*s # %s' % (width, task._spec, task._desc))
 
 # Main program
