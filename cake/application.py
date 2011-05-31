@@ -46,6 +46,7 @@ class Application(object):
 	def load(self, pattern):
 		for fname in glob.iglob(pattern):
 			src = 'from cake.helpers import *\n' + open(fname).read()
+			sys.path.append(osp.dirname(fname))
 			exec(src, self.env)
 	
 	def execute(self, name, *args, **kwargs):
