@@ -18,7 +18,7 @@ Example
 ::
 
   $ cat Cakefile 
-  load('tasks/*.py')
+  self.load('tasks/*.py')
 
   @task
   def test():

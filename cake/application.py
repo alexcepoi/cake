@@ -13,7 +13,7 @@ from cake.errors import *
 class Application(object):
 	def __init__(self):
 		# Prepare environment
-		self.env   = { 'load': self.load }
+		self.env   = { 'self': self }
 		self.tasks = {}
 	
 		# Find Project Root
