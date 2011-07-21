@@ -1,5 +1,5 @@
-It uses a simple python script (Cakefile) located in the project root to define its task.
-The tasks can also be loaded from random locations. Cake can be run from anywhere within the project
+It uses a simple python script (Cakefile) located in the project root to define its tasks.
+Cake can be run and can run tasks from anywhere within the project.
 
 Features
 ---------------------------------------------------
@@ -9,57 +9,54 @@ Features
 
 Usage
 ---------------------------------------------------
+List all tasks
+
 ::
 
-  cake [taskname] [taskargs]
+  cake
+
+Execute task
+
+::
+
+  cake [name] [args]
 
 Example
 ---------------------------------------------------
 ::
 
   $ cat Cakefile 
-  self.load('tasks/*.py')
+  import subprocess as sbp
 
-  @task
+  from cake.lib import task, puts
+
+  @task("description override")
   def test():
-      """ this task does nothing """
-      print("this is a test")
-
-::
-
-  $ cat tasks/*.py
-  def common():
-  	print("common code executed")
+      """ task description """
+      print('this is a sample task')
 
   @task
-  def task1():
-        common()
-  	print("task1 code executed")
-
-  @task("this will override current docstring")
-  def task2(value):
-  	""" this is a simple task """
-  	common()
-  	print("task2 code executed with value %s" % value)
+  def shell(value):
+      """ execute a custom shell command """
+      puts('{magenta}>>{yellow} %s' % value)
+      sbp.call(value, shell=True)
 
 ::
 
   $ cake
-  (in /home/alex/work/cake2/examples)
-  cake test                                  # this task does nothing
-  cake task1                                 # 
-  cake task2 (value)                         # this will override current docstring
-        
+  (in /home/alex/work/cake/examples)
+  cake shell                                 # execute a custom shell command
+  cake test                                  # description override
+
 ::
 
-  $ cake task2 hello
-  (in /home/alex/work/cake2/examples)
-  common code executed
-  task2 code executed with value hello
+  $ cake shell "date"
+  (in /home/alex/work/cake/examples)
+  >> date
+  Thu Jul 21 20:15:37 EEST 2011
 
 Install
 ---------------------------------------------------
 ::
 
   pip install cake
-

@@ -1,11 +1,30 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import curses
 import os
 import os.path as osp
 import re
 import sys
+import curses
+import types
+import inspect
+
+def task(arg = None):
+	""" Task decorator """
+
+	def decorator(func):
+		params = inspect.formatargspec(*inspect.getargspec(func))
+		specformat = '{cyan}%s {reset}%s'
+
+		func._task = True
+		func._spec = specformat % (func.__name__, params if params != '()' else '')
+		func._desc = arg if type(arg) is str else inspect.getdoc(func) or ''
+		func._desc = re.sub('\s+', ' ', func._desc)
+		return func
+
+	if type(arg) == types.FunctionType:
+		return decorator(arg)
+	else: return decorator
 
 def recurse_up(directory, filename):
 	"""

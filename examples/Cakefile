@@ -1,9 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-load('tasks/*.py')
+import subprocess as sbp
+
+from cake.lib import task, puts
+from tasks import *
 
 @task
-def test():
-    """ this task does nothing """
-    print("this is a test")
+def shell(command):
+    """ this task executes a custom shell command """
+    puts('{magenta}>>{yellow} %s' % command)
+    sbp.call(command, shell=True)

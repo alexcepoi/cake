@@ -4,8 +4,6 @@
 import os
 import os.path as osp
 import sys
-import glob
-import inspect
 
 from cake.lib import *
 from cake.errors import *
@@ -13,7 +11,7 @@ from cake.errors import *
 class Application(object):
 	def __init__(self):
 		# Prepare environment
-		self.env   = { 'self': self }
+		self.env   = {}
 		self.tasks = {}
 	
 		# Find Project Root
@@ -22,12 +20,14 @@ class Application(object):
 
 		if self.root:
 			os.chdir(self.root)
+			sys.path.insert(0, '')
 			puts('{yellow}(in %s)' % self.root)
 		else:
 			raise CakeError('Cakefile not found')
 
-		# Execute Cakefile
-		self.load('Cakefile')
+		# Read Cakefile
+		with open('Cakefile') as f:
+			exec(f.read(), self.env)
 
 		# Load all tasks
 		for name, task in self.env.items():
@@ -41,14 +41,9 @@ class Application(object):
 			args       = [i for i in argv[1:] if i.find('=') == -1]
 			kwargs     = dict([i.split('=') for i in argv[1:] if i.find('=') != -1])
 
-			self.execute(argv[0], *args, **kwargs)
+			self.run_task(argv[0], *args, **kwargs)
 
-	def load(self, pattern):
-		for fname in glob.iglob(pattern):
-			src = 'from cake.helpers import *\n' + open(fname).read()
-			exec(src, self.env)
-	
-	def execute(self, name, *args, **kwargs):
+	def run_task(self, name, *args, **kwargs):
 		task = self.tasks.get(name)
 		if task:
 			try: task(*args, **kwargs)
