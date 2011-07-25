@@ -22,7 +22,7 @@ class Application(object):
 			raise CakeError('Cakefile not found')
 
 		# Prepare environment
-		self.env   = { 'path': path }
+		self.env   = {}
 		self.tasks = {}
 	
 		# Read Cakefile
