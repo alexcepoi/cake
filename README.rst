@@ -28,12 +28,13 @@ Example
   $ cat Cakefile 
   import subprocess as sbp
 
-  from cake.lib import task, puts
+  from cake.lib import task, path, puts
 
   @task("description override")
   def test():
       """ task description """
-      print('this is a sample task')
+      print('current dir: %s' % path.current)
+      print('project dir: %s' % path.root)
 
   @task
   def shell(value):

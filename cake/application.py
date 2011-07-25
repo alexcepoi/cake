@@ -5,26 +5,26 @@ import os
 import os.path as osp
 import sys
 
-from cake.lib import *
-from cake.errors import *
+from cake.lib import path, recurse_up, puts
+from cake.errors import CakeError
 
 class Application(object):
 	def __init__(self):
-		# Prepare environment
-		self.env   = {}
-		self.tasks = {}
-	
 		# Find Project Root
-		self.current = os.getcwd()
-		self.root    = recurse_up(self.current, 'Cakefile')
+		path.current = os.getcwd()
+		path.root    = recurse_up(path.current, 'Cakefile')
 
-		if self.root:
-			os.chdir(self.root)
+		if path.root:
+			os.chdir(path.root)
 			sys.path.insert(0, '')
-			puts('{yellow}(in %s)' % self.root)
+			puts('{yellow}(in %s)' % path.root)
 		else:
 			raise CakeError('Cakefile not found')
 
+		# Prepare environment
+		self.env   = { 'path': path }
+		self.tasks = {}
+	
 		# Read Cakefile
 		with open('Cakefile') as f:
 			exec(f.read(), self.env)

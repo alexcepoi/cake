@@ -1,10 +1,11 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from cake.lib import task
+from cake.lib import task, path
 
 def common():
-	print("common code executed")
+	print('current dir: %s' % path.current)
+	print('project dir: %s' % path.root)
 
 @task
 def task1():

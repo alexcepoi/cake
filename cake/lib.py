@@ -9,6 +9,14 @@ import curses
 import types
 import inspect
 
+
+class Prototype(object):
+	pass
+
+# object used for accessing cake paths
+path = Prototype()
+
+
 def task(arg = None):
 	""" Task decorator """
 
@@ -25,6 +33,7 @@ def task(arg = None):
 	if type(arg) == types.FunctionType:
 		return decorator(arg)
 	else: return decorator
+
 
 def recurse_up(directory, filename):
 	"""
