@@ -55,13 +55,15 @@ def recurse_up(directory, filename):
 
 def puts(*args, **kwargs):
 	"""
-	Prints each argument on a separte line color (highlighted and trimmed for tty)
+	Full feature printing function featuring ansi color codes,
+	trimming and padding for both files and ttys
 	"""
 
-	# TODO: generalize
-	# trim   = kwargs.get('trim') is not False
-	# color  = kwargs.get('color') is not False
-	# stream = kwargs.get('stream') or sys.stdout
+	# parse kwargs
+	color   = kwargs.pop('color', True)
+	trim    = kwargs.pop('trim', True)
+	padding = kwargs.pop('padding', None)
+	stream  = kwargs.pop('stream', sys.stdout)
 
 	# stringify args
 	args = [str(i) for i in args]
@@ -90,7 +92,7 @@ def puts(*args, **kwargs):
 			else: return mobj.group(0)
 		return func
 
-	def trim(ansi, width):
+	def trimstr(ansi, width):
 		string = ''; size = 0; i = 0
 
 		while i < len(ansi):
@@ -107,24 +109,38 @@ def puts(*args, **kwargs):
 				# append normal char
 				string = string + ansi[i]
 				i += 1
-		return string
+		return (string, size)
 
 	# process strings
-	if not sys.stdout.isatty():
+	if not stream.isatty():
 		# remove ansi codes and print
 		for string in args:
-			print(re.sub('{(.+?)}', replace(False), string))
+			stream.write(re.sub('{(.+?)}', replace(False), string) + '\n')
 	else:
 		# get terminal width
 		try: curses.setupterm()
-		except: width = float('inf')
-		else: width = curses.tigetnum('cols')
+		except:
+			trim = False
+			padding = None
+		else:
+			width = curses.tigetnum('cols')
 
-		# trim string
 		for string in args:
-			string =  re.sub('{(.+?)}', replace(True), string)
+			# color string
+			string =  re.sub('{(.+?)}', replace(color), string)
 
-			trimmed = trim(string, width)
-			if len(trimmed) < len(string):
-				trimmed = trim(string, width - 3) + '...'
-			print(trimmed + Fore['RESET'])
+			if trim or padding:
+				trimmed, size = trimstr(string, width)
+
+			# trim string
+			if trim:
+				if len(trimmed) < len(string):
+					trimmed = trimstr(string, width - 3)[0] + '...'
+				string = trimmed
+
+			# add padding
+			if padding:
+				string += padding * (width - size)
+
+			# print final string
+			stream.write(string + Fore['RESET'] + '\n')
