@@ -115,7 +115,7 @@ def puts(*args, **kwargs):
 	if not stream.isatty():
 		# remove ansi codes and print
 		for string in args:
-			stream.write(re.sub('{(.+?)}', replace(False), string) + '\n')
+			stream.write(re.sub('{(\w+?)}', replace(False), string) + '\n')
 	else:
 		# get terminal width
 		try: curses.setupterm()
@@ -127,7 +127,7 @@ def puts(*args, **kwargs):
 
 		for string in args:
 			# color string
-			string =  re.sub('{(.+?)}', replace(color), string)
+			string =  re.sub('{(\w+?)}', replace(color), string)
 
 			if trim or padding:
 				trimmed, size = trimstr(string, width)
