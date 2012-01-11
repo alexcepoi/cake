@@ -10,6 +10,8 @@ import types
 import inspect
 import getpass
 
+import colorama
+colorama.init()
 
 class Prototype(object):
 	pass
@@ -70,23 +72,9 @@ def puts(*args, **kwargs):
 	args = [str(i) for i in args]
 
 	# helpers
-	Fore = {
-			'RESET': '\x1b[0m',
-			'BOLD': '\x1b[1m',
-
-			'BLACK': '\x1b[30m',
-			'RED': '\x1b[31m',
-			'GREEN': '\x1b[32m',
-			'YELLOW': '\x1b[33m',
-			'BLUE': '\x1b[34m',
-			'MAGENTA': '\x1b[35m',
-			'CYAN': '\x1b[36m',
-			'WHITE': '\x1b[37m',
-			}
-
 	def replace(ansi = True):
 		def func(mobj):
-			color = Fore.get(mobj.group(1).upper())
+			color = getattr(colorama.Fore, mobj.group(1).upper())
 			if color:
 				if ansi: return color
 				else: return ''
@@ -144,7 +132,7 @@ def puts(*args, **kwargs):
 				string += padding * (width - size)
 
 			# print final string
-			stream.write(string + Fore['RESET'] + '\n')
+			stream.write(string + colorama.Fore.RESET + '\n')
 
 def sudo(user='root'):
 	if getpass.getuser() != user:

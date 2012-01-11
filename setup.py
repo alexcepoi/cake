@@ -23,5 +23,7 @@ setup(
 	author_email = 'alex.cepoi@gmail.com',
 	maintainer = 'Alexandru Cepoi',
 	maintainer_email = 'alex.cepoi@gmail.com',
+
+	install_requires = ['colorama'],
 )
 
