@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
 	name = 'cake',
-	version = '0.2',
+	version = '0.2.2',
 
 	platforms='linux',
 	license = 'GPLv3',

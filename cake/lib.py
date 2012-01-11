@@ -13,11 +13,18 @@ import getpass
 import colorama
 colorama.init()
 
+
 class Prototype(object):
 	pass
 
 # object used for accessing cake paths
 path = Prototype()
+
+# object used for accessing colors
+colors = Prototype()
+colors.__dict__.update(colorama.Fore.__dict__)
+colors.__dict__.update(dict([('BACK_%s' % key, val) for key, val in colorama.Back.__dict__.iteritems()]))
+colors.__dict__.update(colorama.Style.__dict__)
 
 
 def task(arg = None):
@@ -35,7 +42,8 @@ def task(arg = None):
 
 	if type(arg) == types.FunctionType:
 		return decorator(arg)
-	else: return decorator
+	else:
+		return decorator
 
 
 def recurse_up(directory, filename):
@@ -74,7 +82,7 @@ def puts(*args, **kwargs):
 	# helpers
 	def replace(ansi = True):
 		def func(mobj):
-			color = getattr(colorama.Fore, mobj.group(1).upper())
+			color = getattr(colors, mobj.group(1).upper())
 			if color:
 				if ansi: return color
 				else: return ''
@@ -132,7 +140,8 @@ def puts(*args, **kwargs):
 				string += padding * (width - size)
 
 			# print final string
-			stream.write(string + colorama.Fore.RESET + '\n')
+			stream.write(string + colors.RESET_ALL + '\n')
+
 
 def sudo(user='root'):
 	if getpass.getuser() != user:
