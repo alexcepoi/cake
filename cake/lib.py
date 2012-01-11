@@ -8,6 +8,7 @@ import sys
 import curses
 import types
 import inspect
+import getpass
 
 
 class Prototype(object):
@@ -144,3 +145,8 @@ def puts(*args, **kwargs):
 
 			# print final string
 			stream.write(string + Fore['RESET'] + '\n')
+
+def sudo(user='root'):
+	if getpass.getuser() != user:
+		args = ['sudo', '-u%s' % user, sys.executable] + sys.argv
+		os.execvpe(args[0], args, os.environ)

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from cake.lib import task, path
+from cake.lib import sudo
 
 def common():
 	print('current dir: %s' % path.current)

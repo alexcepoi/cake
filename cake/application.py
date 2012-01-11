@@ -4,6 +4,7 @@
 import os
 import os.path as osp
 import sys
+import getpass
 
 from cake.lib import path, recurse_up, puts
 from cake.errors import CakeError
@@ -17,7 +18,6 @@ class Application(object):
 		if path.root:
 			os.chdir(path.root)
 			sys.path.insert(0, '')
-			puts('{yellow}(in %s)' % path.root)
 		else:
 			raise CakeError('Cakefile not found')
 
@@ -28,6 +28,12 @@ class Application(object):
 		# Read Cakefile
 		with open('Cakefile') as f:
 			exec(f.read(), self.env)
+
+		# Print project path
+		if os.environ.get('SUDO_USER', None):
+			puts('{yellow}(in \'%s\' as %s)' % (path.root, getpass.getuser()))
+		else:
+			puts('{yellow}(in \'%s\')' % path.root)
 
 		# Load all tasks
 		for name, task in self.env.items():
