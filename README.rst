@@ -28,7 +28,8 @@ Example
   $ cat Cakefile 
   import subprocess as sbp
 
-  from cake.lib import task, path, puts
+  from cake.lib import task, path
+  from cake.color import fore
 
   @task("description override")
   def test():
@@ -39,7 +40,7 @@ Example
   @task
   def shell(value):
       """ execute a custom shell command """
-      puts('{magenta}>>{yellow} %s' % value)
+      print fore.magenta('>> ') + fore.yellow(value)
       sbp.call(value, shell=True)
 
 ::

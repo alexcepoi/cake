@@ -3,11 +3,12 @@
 
 import subprocess as sbp
 
-from cake.lib import task, puts
+from cake.lib import task
+from cake.color import fore
 from tasks import *
 
 @task
 def shell(command):
     """ this task executes a custom shell command """
-    puts('{magenta}>>{yellow} %s' % command)
+    print fore.magenta('>> ') + fore.yellow(command)
     sbp.call(command, shell=True)

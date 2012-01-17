@@ -3,7 +3,6 @@
 
 from cake.lib import task, path
 
-
 def common():
 	print('current dir: %s' % path.current)
 	print('project dir: %s' % path.root)

@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-import os.path as osp
 import sys
-import getpass
 
-from cake.lib import path, recurse_up, puts
+from cake.lib import path, recurse_up
+from cake.color import puts, fore
 from cake.errors import CakeError
 
 class Application(object):
@@ -18,6 +17,9 @@ class Application(object):
 		if path.root:
 			os.chdir(path.root)
 			sys.path.insert(0, '')
+
+			# Print project path
+			print fore.yellow('(in \'%s\')' % path.root)
 		else:
 			raise CakeError('Cakefile not found')
 
@@ -28,12 +30,6 @@ class Application(object):
 		# Read Cakefile
 		with open('Cakefile') as f:
 			exec(f.read(), self.env)
-
-		# Print project path
-		if os.environ.get('SUDO_USER', None):
-			puts('{yellow}(in \'%s\' as %s)' % (path.root, getpass.getuser()))
-		else:
-			puts('{yellow}(in \'%s\')' % path.root)
 
 		# Load all tasks
 		for name, task in self.env.items():
@@ -64,7 +60,7 @@ class Application(object):
 		keys.sort()
 
 		for task in [self.tasks[i] for i in keys]:
-			puts('cake %-*s # %s' % (width, task._spec, task._desc))
+			puts('cake %-*s # %s' % (width, task._spec, task._desc), trim=True)
 
 # Main program
 def main():
@@ -72,7 +68,7 @@ def main():
 		app = Application()
 		app.run(*sys.argv[1:])
 	except CakeError as e:
-		puts('{red}cake aborted!', e)
+		print fore.red('cake aborted!\n') + str(e)
 
 if __name__ == '__main__':
 	main()
