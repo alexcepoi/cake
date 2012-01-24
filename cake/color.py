@@ -14,7 +14,6 @@ ANSI_PATTERN = '\x1b[^m]*m'
 
 class ColorWrapper(object):
 	""" Wraps a string in a color or returns color """
-
 	def __init__(self, color):
 		self.color = color
 
@@ -22,12 +21,13 @@ class ColorWrapper(object):
 		return self.color
 
 	def __call__(self, *args):
+		reset  = colorama.Style.RESET_ALL
 		string = self.color
 		
 		for arg in args:
 			string += str(arg)
 
-		return string + colorama.Style.RESET_ALL
+		return string.replace(reset, reset + self.color) + reset
 
 
 class ColorHelper(object):
@@ -75,6 +75,9 @@ def puts(*args, **kwargs):
 	padding = kwargs.pop('padding', None)
 	stream  = kwargs.pop('stream', sys.stdout)
 
+	# HACK: check if stream is IndentedFile
+	indent = getattr(stream, 'indent', 0)
+
 	# stringify args
 	args = [str(i) for i in args]
 
@@ -110,7 +113,7 @@ def puts(*args, **kwargs):
 			trim = False
 			padding = None
 		else:
-			width = curses.tigetnum('cols')
+			width = curses.tigetnum('cols') - indent
 
 		for string in args:
 			if trim or padding:
@@ -132,6 +135,7 @@ def puts(*args, **kwargs):
 
 if __name__ == '__main__':
 	print fore.red('red') + style.bright('bold')
+	print fore.red('red' + style.bright('bold') + 'red')
 	print ansi('redbold', fore.red, style.bright)
 	puts(fore.red('red'), padding='=')
 	puts(fore.red('red') * 200, trim=True)

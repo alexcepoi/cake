@@ -26,36 +26,29 @@ Example
 ::
 
   $ cat Cakefile 
-  import subprocess as sbp
-
   from cake.lib import task, path
-  from cake.color import fore
 
-  @task("description override")
-  def test():
+  @task("header information")
+  def test(value='test'):
       """ task description """
       print('current dir: %s' % path.current)
       print('project dir: %s' % path.root)
-
-  @task
-  def shell(value):
-      """ execute a custom shell command """
-      print fore.magenta('>> ') + fore.yellow(value)
-      sbp.call(value, shell=True)
+      print('running with value %s' % value)
 
 ::
 
   $ cake
   (in /home/alex/work/cake/examples)
-  cake shell                                 # execute a custom shell command
-  cake test                                  # description override
+  cake test                                  # task description
 
 ::
 
-  $ cake shell "date"
+  $ cake test example
   (in /home/alex/work/cake/examples)
-  >> date
-  Thu Jul 21 20:15:37 EEST 2011
+  ** test: header information
+  current dir: /home/alex/work/cake/examples
+  project dir: /home/alex/work/cake/examples
+  running with value example
 
 Install
 ---------------------------------------------------

@@ -8,6 +8,7 @@ from cake.lib import path, recurse_up
 from cake.color import puts, fore
 from cake.errors import CakeError
 
+
 class Application(object):
 	def __init__(self):
 		# Find Project Root
@@ -19,7 +20,7 @@ class Application(object):
 			sys.path.insert(0, '')
 
 			# Print project path
-			print fore.yellow('(in \'%s\')' % path.root)
+			puts(fore.yellow('(in %s)' % path.root))
 		else:
 			raise CakeError('Cakefile not found')
 
@@ -68,7 +69,7 @@ def main():
 		app = Application()
 		app.run(*sys.argv[1:])
 	except CakeError as e:
-		print fore.red('cake aborted!\n') + str(e)
+		puts(fore.red('cake aborted!\n') + str(e), stream=sys.stderr)
 
 if __name__ == '__main__':
 	main()

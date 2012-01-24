@@ -1,14 +1,35 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import subprocess as sbp
+from cake.lib import task, path
 
-from cake.lib import task
-from cake.color import fore
-from tasks import *
+
+def status():
+	print('current dir: %s' % path.current)
+	print('project dir: %s' % path.root)
 
 @task
-def shell(command):
-    """ this task executes a custom shell command """
-    print fore.magenta('>> ') + fore.yellow(command)
-    sbp.call(command, shell=True)
+def clean():
+	""" cleans temp files """
+	print 'cleaned'
+
+@task('Starting Module')
+def start(module='*'):
+	""" starts module """
+	print 'started'
+
+@task('Stopping Module')
+def stop(module='*'):
+	""" stops module """
+	print 'stopped'
+
+@task
+def reset():
+	stop()
+	clean()
+	start()
+
+@task("this task is useless")
+def dummy():
+	""" This is a rather long string which is sure to not fit in the terminal width;\nThis example is useful in order to see if the docstring is trimmed like it should be;\nthree dots should be added to the trimmed string and it should fit in one row """
+	status()
